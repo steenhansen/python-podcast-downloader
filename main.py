@@ -3,7 +3,7 @@ import episodes
 import menu
 import console
 import os
- 
+
 def main():
 	os.system('cls')
 	dl_every = True

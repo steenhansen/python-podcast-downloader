@@ -1,6 +1,10 @@
 
 from pathlib import Path
 
+from urllib.request import urlopen
+
+from time import sleep
+
 import os
 import requests
 import json
@@ -54,7 +58,8 @@ def stream_url(epi_url, write_path):
 			delete_file(write_path)
 	return file_done
 
-def get_rss_file(pod_url):
+# fails for 'http://feeds.soundcloud.com/users/soundcloud:users:572119410/sounds.rss'
+def BAD_get_rss_file(pod_url):
 	rss_str = ""
 	with requests.get(pod_url) as pod_req:
 		for pod_line in pod_req.iter_lines():
@@ -62,10 +67,20 @@ def get_rss_file(pod_url):
 			rss_str = rss_str + str_line
 	return rss_str
 
+def get_rss_file(pod_url):
+	html = urlopen(pod_url)
+	html_bytes = html.read()
+	rss_str = html_bytes.decode("utf-8")
+	return rss_str
+
 def get_channel(rss_str):
-	json_rss = xmltodict.parse(rss_str)
-	epi_items = json_rss['rss']
-	channel_items = epi_items['channel']['item']
+	try:
+		json_rss = xmltodict.parse(rss_str)
+		epi_items = json_rss['rss']
+		channel_items = epi_items['channel']['item']
+	except Exception as e:
+		print("\n\nConnection issue - ", str(e), "\n")
+		channel_items = []
 	return channel_items
 
 def download_files(pod_dir, missing_episodes):
@@ -73,8 +88,9 @@ def download_files(pod_dir, missing_episodes):
 		write_file, epi_url = an_epi
 		run_dir = os.getcwd()
 		numbered_fname = os.path.join(run_dir, pod_dir, write_file)
-		got_file = stream_url(epi_url, numbered_fname)
-		
+		stream_url(epi_url, numbered_fname)
+		sleep(1)
+
 def update_folder(fold_name, dl_every, dl_number, dl_oldest, all_episodes):
 	new_episodes = already_have(fold_name, all_episodes)
 	if dl_every:
