@@ -1,16 +1,15 @@
 
 from pathlib import Path
-
 from urllib.request import urlopen
-
 from time import sleep
 
-import os
 import requests
-import json
 import xmltodict
-import podcasts
+
+import os
 import re
+
+import podcasts
 import console
 
 POD_CHUNK_SIZE = 256 * 256 #65536
@@ -116,12 +115,7 @@ def good_enclosures(channel_items):
 			good_enclosures +=1
 	return good_enclosures
 
-def get_items(fold_name):
-	run_dir = os.getcwd()
-	rss_name = os.path.join(run_dir, fold_name, podcasts.RSS_FILE_NAME)
-	with open(rss_name, "r") as rss_file:
-		rss_url = rss_file.readline()
-	rss_str = get_rss_file(rss_url)
+def all_items(rss_str):
 	channel_items = get_channel(rss_str)
 	item_count =  good_enclosures(channel_items)
 	all_episodes = []
@@ -130,6 +124,16 @@ def get_items(fold_name):
 		if epi_data != None:
 			all_episodes.append(epi_data)
 			item_count -=1
+	return all_episodes
+
+
+def get_items(fold_name):
+	run_dir = os.getcwd()
+	rss_name = os.path.join(run_dir, fold_name, podcasts.RSS_FILE_NAME)
+	with open(rss_name, "r") as rss_file:
+		rss_url = rss_file.readline()
+	rss_str = get_rss_file(rss_url)
+	all_episodes = all_items(rss_str)
 	return all_episodes
 
 def item_data(an_item, item_count):

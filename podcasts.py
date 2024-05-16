@@ -54,13 +54,12 @@ def input_url():
 def check_url(pod_url):
 	try:
 		rss_file = episodes.get_rss_file(pod_url)
-		last_episode = episodes.all_items(rss_file, 0, False)
-		if len(last_episode)>0:
+		all_episodes = episodes.all_items(rss_file)
+		if len(all_episodes)>0:
 			return True
 		else:
 			return False
 	except Exception as e:
-		#print("check_url EX", str(e))
 		return False
 
 def valid_rss():

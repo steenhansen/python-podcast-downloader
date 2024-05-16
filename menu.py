@@ -3,33 +3,57 @@ from pathlib import Path
 
 import podcasts
 import episodes
-import os
 import console
-import psutil
 
-INDENT_LEFT_SIDE = "                          "
+import psutil
+import os
+
+INDENT_LEFT_SIDE = "                    "
 DIV_TO_GB = 1_073_741_824 #2^30
-CGREY    = '\33[90m'
-CBOLD     = '\33[1m'
+
+# https://stackoverflow.com/questions/287871/how-do-i-print-colored-text-to-the-terminal    qubodup
+
 CEND      = '\33[0m'
+CBOLD     = '\33[1m'
+CITALIC   = '\33[3m'
+CURL      = '\33[4m'
+CBLINK    = '\33[5m'
+CBLINK2   = '\33[6m'
+CSELECTED = '\33[7m'
+
+CBLACK  = '\33[30m'
+CRED    = '\33[31m'
+CGREEN  = '\33[32m'
+CYELLOW = '\33[33m'
+CBLUE   = '\33[34m'
+CVIOLET = '\33[35m'
+CBEIGE  = '\33[36m'
+CWHITE  = '\33[37m'
+
+CBLACKBG  = '\33[40m'
+CREDBG    = '\33[41m'
+CGREENBG  = '\33[42m'
+CYELLOWBG = '\33[43m'
+CBLUEBG   = '\33[44m'
+CVIOLETBG = '\33[45m'
+CBEIGEBG  = '\33[46m'
+CWHITEBG  = '\33[47m'
+
+CGREY    = '\33[90m'
+CRED2    = '\33[91m'
+CGREEN2  = '\33[92m'
+CYELLOW2 = '\33[93m'
+CBLUE2   = '\33[94m'
+CVIOLET2 = '\33[95m'
+CBEIGE2  = '\33[96m'
+CWHITE2  = '\33[97m'
+
 
 def every_choice(dl_every):
 	if dl_every:
-		return CBOLD + "E > EVERY episode downloaded" + CEND
+		return CGREEN + "E" + CEND + CBOLD + " > Every episode downloaded" + CEND
 	else:
-		return CGREY + "E > EVERY episode downloaded" + CEND
-
-def old_choice(dl_every, dl_number_str, dl_oldest):
-	if dl_number_str=="1":
-		episodes_word = " episode "
-	else:
-		episodes_word = " episodes "
-	if dl_every:
-		return CGREY + "O > OLD " + dl_number_str + episodes_word + "first" + CEND
-	elif dl_oldest:
-		return CBOLD + "O > OLD " + dl_number_str + episodes_word + "first"+  CEND 
-	else:
-		return CGREY + "O > OLD " + dl_number_str + episodes_word + "first" + CEND
+		return CGREY + "E > Every episode downloaded" + CEND
 
 def new_choice(dl_every, dl_number_str, dl_oldest):
 	if dl_number_str=="1":
@@ -37,21 +61,32 @@ def new_choice(dl_every, dl_number_str, dl_oldest):
 	else:
 		episodes_word = " episodes "
 	if dl_every:
-		return CGREY + "N > NEW " + dl_number_str + episodes_word + "first" + CEND
+		return CGREY + "N > Newest " + dl_number_str + episodes_word + "first" + CEND
 	elif dl_oldest:
-		return CGREY + "N > NEW " + dl_number_str + episodes_word + "first" + CEND
+		return CGREY + "N > Newest " + dl_number_str + episodes_word + "first" + CEND
 	else:
-		return CBOLD + "N > NEW " + dl_number_str + episodes_word + "first" + CEND
+		return CGREEN + "N" + CEND + CBOLD + " > Newest " + dl_number_str + episodes_word + "first" + CEND
+	
+def old_choice(dl_every, dl_number_str, dl_oldest):
+	if dl_number_str=="1":
+		episodes_word = " episode "
+	else:
+		episodes_word = " episodes "
+	if dl_every:
+		return CGREY + "O > Oldest " + dl_number_str + episodes_word + "first" + CEND
+	elif dl_oldest:
+		return CGREEN + "O" + CEND + CBOLD + " > Oldest " + dl_number_str + episodes_word + "first"+  CEND 
+	else:
+		return CGREY + "O > Oldest " + dl_number_str + episodes_word + "first" + CEND
 
 def alpha_choices(dl_every, dl_number_str, dl_oldest):
 	every_text = every_choice(dl_every)
 	old_text = old_choice(dl_every, dl_number_str, dl_oldest)
 	new_text = new_choice(dl_every, dl_number_str, dl_oldest)
 	#print("\n\n\n")
-	print("A >  ADD a podcast                Q > QUIT program    " + every_text)        
-	print("C > CHANGE podcast url            H > HELP            " + old_text ) 
-	print("D > DELETE podcast        Control-C > KILL program    " + new_text) 
-	print("R > RENAME podcast")    
+	print("A > Add podcast     " + every_text)        
+	print("H > Help            " + old_text ) 
+	print("Q > Quit            " + new_text) 
 
 def free_gb():
 	bytes_free = psutil.disk_usage(".").free
@@ -67,14 +102,17 @@ def choices_mess(dl_every, dl_number, dl_oldest):
 		episodes_word = "episodes"
 	gb_free = INDENT_LEFT_SIDE + free_gb() + "GB free ---- "
 	if dl_every:
-		return f"{gb_free}Get every episode"
+		every_green = CGREEN + "EVERY" +  CEND
+		return f"{gb_free}{every_green} episode"
 	elif dl_oldest:
-		return f"{gb_free}Get oldest {dl_number} {episodes_word}"
+		oldest_green = CGREEN + "OLDEST " + str(dl_number) +  CEND
+		return f"{gb_free} {oldest_green} {episodes_word}"
 	else:
-		return f"{gb_free}Get newest {dl_number} {episodes_word}"
+		newest_green = CGREEN + "NEWEST " + str(dl_number) +  CEND
+		return f"{gb_free} {newest_green} {episodes_word}"
 
 def user_choice():
-	menu_choice = input("Command(A-R) or podcast # : ")
+	menu_choice = input("Command(A H Q E N O) or podcast # : ")
 	lower_choice = menu_choice.lower()
 	return lower_choice
 
@@ -93,12 +131,6 @@ def show_choose(menu_choice, dl_every, dl_number, dl_oldest, folder_to_all_items
 	match menu_choice:
 		case "a":
 			podcasts.add_folder()
-		case "c":
-			print("C")
-		case "d":
-			print("D")
-		case "r":
-			print("r")
 		case "e":
 			dl_every = True
 		case "o":
@@ -112,7 +144,13 @@ def show_choose(menu_choice, dl_every, dl_number, dl_oldest, folder_to_all_items
 		case "q":
 			quit_menu = True
 		case "h":
-			print("HELP ..... ")
+			help_1 = "HELP"
+			help_2 = "  E/O/N control how many episods are read"
+			help_3 = "    E does all un-downloaded episodes"
+			help_4 = "    O starts with the earliest un-downloaded episodes"
+			help_5 = "    N begins with N begins with recent un-downloaded episodes"
+			help_chars = "\n" + help_1 + "\n" + help_2 + "\n" + help_3 + "\n" + help_4 + "\n" + help_5 + "\n\n"
+			print(help_chars)
 		case _:
 			print(INDENT_LEFT_SIDE + "To download podcasts quickly, Keep this program active, in focus")
 			number_choice(menu_choice, dl_every, dl_number, dl_oldest, folder_to_all_items)
@@ -159,7 +197,7 @@ def epi_nums(dirs_files):
 		_, _, files = next(os.walk(rss_folder))
 		have_count = len(files) -1
 		index = idx+1
-		pod_menu = f"{index} - {a_dir} ({have_count}/{cur_epis})"
+		pod_menu = f"{index}: {a_dir} ({have_count}/{cur_epis})"
 		numbered_pods.append(pod_menu)
 	console.read_folder('')
 	return (numbered_pods, folder_to_all_items)
